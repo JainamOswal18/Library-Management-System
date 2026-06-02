@@ -168,8 +168,8 @@ def update_book(book_id, title, author, isbn, copies):
     conn.close()
 
 
-    def delete_book(book_id):
-      conn = sqlite3.connect("library.db", timeout=30)
+def delete_book(book_id):
+    conn = sqlite3.connect("library.db", timeout=30)
 
     try:
         active = conn.execute(
