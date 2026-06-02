@@ -168,20 +168,28 @@ def update_book(book_id, title, author, isbn, copies):
     conn.close()
 
 
-def delete_book(book_id):
-    """Delete a book. Refuses if any copy is still on loan."""
-    conn = get_connection()
-    active = conn.execute(
-        "SELECT COUNT(*) FROM transactions WHERE book_id=? AND status='ISSUED'",
-        (book_id,),
-    ).fetchone()[0]
-    if active:
-        conn.close()
-        raise ValueError("Cannot delete: this book has copies currently issued.")
-    conn.execute("DELETE FROM books WHERE book_id=?", (book_id,))
-    conn.commit()
-    conn.close()
+    def delete_book(book_id):
+      conn = sqlite3.connect("library.db", timeout=30)
 
+    try:
+        active = conn.execute(
+            "SELECT COUNT(*) FROM transactions WHERE book_id=? AND status='ISSUED'",
+            (book_id,),
+        ).fetchone()[0]
+
+        if active:
+            raise ValueError(
+                "Cannot delete: this book has copies currently issued."
+            )
+
+        conn.execute(
+            "DELETE FROM books WHERE book_id=?",
+            (book_id,),
+        )
+        conn.commit()
+
+    finally:
+        conn.close()
 
 def get_books(search=""):
     """Return all books, optionally filtered by a title/author/ISBN search."""
